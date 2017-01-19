@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class Quiniela {
 
     private ArrayList<Partido> partit;
-    private int jornada;
+    private String jornada;
     private String temporada;
     private int recaudacion;
     private int el15;
@@ -26,11 +26,11 @@ public class Quiniela {
         this.partit = partit;
     }
 
-    public int getJornada() {
+    public String getJornada() {
         return jornada;
     }
 
-    public void setJornada(int jornada) {
+    public void setJornada(String jornada) {
         this.jornada = jornada;
     }
 

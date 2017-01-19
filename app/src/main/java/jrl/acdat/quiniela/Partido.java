@@ -2,7 +2,7 @@ package jrl.acdat.quiniela;
 
 public class Partido {
 
-    private int num;
+    private String num;
     private String equipo1;
     private String equipo2;
     private int pt1;
@@ -10,11 +10,11 @@ public class Partido {
     private int pt2;
     private String sig;
 
-    public int getNum() {
+    public String getNum() {
         return num;
     }
 
-    public void setNum(int num) {
+    public void setNum(String num) {
         this.num = num;
     }
 
