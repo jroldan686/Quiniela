@@ -12,6 +12,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.loopj.android.http.FileAsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
@@ -21,6 +22,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -33,7 +35,18 @@ public class MainActivity extends AppCompatActivity {
     public static final String RUTAQUINIELISTA = "http://www.quinielista.es/xml/temporada.asp";
 
     // Servidor de casa
-    public static final String RUTASERVIDOR = "http://192.168.1.5/curso1617/quiniela/";
+    //public static final String RUTASERVIDOR = "http://192.168.1.5/curso1617/quiniela/";
+    //public static final String RUTAPHP = "http://192.168.1.5/curso1617/quiniela/premios.php";
+
+    // Servidor de clase
+    public static final String RUTASERVIDOR = "http://192.168.2.11/acceso/quiniela/";
+    public static final String RUTAPHP = "http://192.168.2.11/acceso/quiniela/premios.php";
+
+    // Servidor bitbits
+    //public static final String RUTASERVIDORJSON = "http://bitbits.hopto.org/ACDAT/json/";
+    //public static final String RUTASERVIDORXML = "http://bitbits.hopto.org/ACDAT/xml/";
+    //public static final String RUTASERVIDORPREMIOS = "http://bitbits.hopto.org/ACDAT/premios/";
+    //public static final String RUTAPHP = "http://bitbits.hopto.org/ACDAT/premios/premios.php";
 
     public static final String RESULTADOS = "resultados";
     public static final String APUESTAS = "apuestas.txt";
@@ -90,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
         btnCalcular.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                descargarResultados();
                 descargarApuestas();
             }
         });
@@ -168,7 +180,6 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
                         */
-                        while(quinielas == null || apuestas == null);   // Espera a que los datos estén disponibles
                         escrutarApuestas(quinielas, apuestas);
                     } catch (Exception ex) {
                         Toast.makeText(MainActivity.this, ex.getMessage(), Toast.LENGTH_LONG).show();
@@ -211,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Resultado resultado = leer(file, UTF8);
                     apuestas = resultado.getContenido().split("\n");
+                    descargarResultados();
                 }
 
                 @Override
@@ -225,45 +237,64 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
         }
     }
-/*
-    private void subirPremios(String premios) {
+
+    private void subirPremios(File file) {
+        final ProgressDialog progreso = new ProgressDialog(MainActivity.this);
+        final String nombrefichero = file.getName();
         RequestParams params = new RequestParams();
-        params.put("premios", premios);
-        RestClient.post(RUTASERVIDOR, params, new TextHttpResponseHandler() {
+        try {
+            params.put("param", file);
+            RestClient.post(RUTAPHP, params, new TextHttpResponseHandler() {
 
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                Toast.makeText(MainActivity.this, "El fichero \"" + PREMIOS + (esJson ? EXTENSIONJSON : EXTENSIONXML) +
-                        "\" no se ha subido al Servidor", Toast.LENGTH_LONG).show();
-            }
+                @Override
+                public void onStart() {
+                    super.onStart();
+                    progreso.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    progreso.setMessage("Conectando . . .");
+                    progreso.setCancelable(false);
+                    progreso.show();
+                }
 
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                Toast.makeText(MainActivity.this, "El fichero \"" + PREMIOS + (esJson ? EXTENSIONJSON : EXTENSIONXML) +
-                        "\" se ha subido con exito al Servidor", Toast.LENGTH_SHORT).show();
-            }
-        });
+                @Override
+                public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                    progreso.dismiss();
+                    Toast.makeText(MainActivity.this, "El fichero \"" + nombrefichero +
+                            "\" no se ha subido al Servidor", Toast.LENGTH_LONG).show();
+                }
+
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, String responseString) {
+                    progreso.dismiss();
+                    Toast.makeText(MainActivity.this, "El fichero \"" + nombrefichero +
+                            "\" se ha subido con exito al Servidor", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (FileNotFoundException ex) {
+            Toast.makeText(MainActivity.this, ex.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
-*/
+
     private void escrutarApuestas(ArrayList<Quiniela> quinielas, String[] apuestas) {
         int ultimaJornada = quinielas.size() - 1;
-        double recaudacion = quinielas.get(ultimaJornada).getRecaudacion();
+        //double recaudacion = quinielas.get(ultimaJornada).getRecaudacion();
         String apuesta, numero, resultado, plenoAl15, contenido = "";
         Premiada premiada;
         int partidosAcertados = 0;
         ArrayList<Premiada> premiadas = new ArrayList<Premiada>();
+        /*
         int acertantesEspecial = 0;
         int acertantesPrimera = 0;
         int acertantesSegunda = 0;
         int acertantesTercera = 0;
         int acertantesCuarta = 0;
         int acertantesQuinta = 0;
+        */
 
         for(int i = 0; i < apuestas.length; i++) {
             apuesta = apuestas[i];
             premiada = new Premiada();
+            partidosAcertados = 0;
             for (int j = 0; j < quinielas.get(ultimaJornada).getPartit().size(); j++) {
-                partidosAcertados = 0;
                 numero = quinielas.get(ultimaJornada).getPartit().get(j).getNum();
                 resultado = quinielas.get(ultimaJornada).getPartit().get(j).getSig();
                 if (!numero.equals("15") && resultado.equals(String.valueOf(apuesta.charAt(j)))) {
@@ -277,19 +308,39 @@ public class MainActivity extends AppCompatActivity {
                     if(partidosAcertados > 9) {
                         premiada.setApuesta(apuesta);
                         switch (partidosAcertados) {
+                            /*
                             case 10: premiada.setCategoria(Categoria.QUINTA); acertantesQuinta++; break;
                             case 11: premiada.setCategoria(Categoria.CUARTA); acertantesCuarta++; break;
                             case 12: premiada.setCategoria(Categoria.TERCERA); acertantesTercera++; break;
                             case 13: premiada.setCategoria(Categoria.SEGUNDA); acertantesSegunda++; break;
                             case 14: premiada.setCategoria(Categoria.PRIMERA); acertantesPrimera++; break;
                             case 15: premiada.setCategoria(Categoria.ESPECIAL); acertantesEspecial++; break;
+                            */
+                            case 10: premiada.setCategoria(Categoria.QUINTA);
+                                     premiada.setPremio(quinielas.get(ultimaJornada).getEl10() / 100);
+                                     break;
+                            case 11: premiada.setCategoria(Categoria.CUARTA);
+                                     premiada.setPremio(quinielas.get(ultimaJornada).getEl11() / 100);
+                                     break;
+                            case 12: premiada.setCategoria(Categoria.TERCERA);
+                                     premiada.setPremio(quinielas.get(ultimaJornada).getEl12() / 100);
+                                     break;
+                            case 13: premiada.setCategoria(Categoria.SEGUNDA);
+                                     premiada.setPremio(quinielas.get(ultimaJornada).getEl13() / 100);
+                                     break;
+                            case 14: premiada.setCategoria(Categoria.PRIMERA);
+                                     premiada.setPremio(quinielas.get(ultimaJornada).getEl14() / 100);
+                                     break;
+                            case 15: premiada.setCategoria(Categoria.ESPECIAL);
+                                     premiada.setPremio(quinielas.get(ultimaJornada).getEl15() / 100);
+                                     break;
                         }
                         premiadas.add(premiada);
                     }
                 }
             }
         }
-
+        /*
         for(int i = 0; i < premiadas.size(); i++) {
             if(premiadas.get(i).getCategoria() == Categoria.QUINTA) {
                 premiadas.get(i).setPremio((recaudacion * 0.09) / acertantesQuinta);
@@ -310,15 +361,31 @@ public class MainActivity extends AppCompatActivity {
                 premiadas.get(i).setPremio((recaudacion * 0.075) / acertantesEspecial);
             }
         }
-
+        */
+        if(!esJson)
+            contenido = "<premiadas><br/>";
         for(int i = 0; i < premiadas.size(); i++) {
-            contenido += premiadas.get(i).getApuesta() + " -> " + premiadas.get(i).getPremio() + " Euros" + "\n";
+            if(esJson) {
+                Gson gson = new Gson();
+                contenido += gson.toJson(premiadas.get(i)) + "\n";
+            } else {
+                contenido += "<apuestas>" +
+                        premiadas.get(i).getApuesta() +
+                        "</apuestas><br/>" +
+                        "<premios>" + premiadas.get(i).getPremio() + " Euros" +
+                        "</premios><br/>";
+            }
         }
-        String fichero = PREMIOS + (esJson ? EXTENSIONJSON : EXTENSIONXML);
-        if(memoria.escribirInterna(fichero, contenido, true, UTF8)) {
-            // subirPremios(premios);
+        if(!esJson)
+            contenido += "</premiadas>";
+        String nombrefichero = PREMIOS + (esJson ? EXTENSIONJSON : EXTENSIONXML);
+        if(memoria.escribirInterna(nombrefichero, contenido, false, UTF8)) {
+            File fichero = new File(this.getFilesDir(), nombrefichero);
+            //Resultado result = memoria.leerInterna(nombrefichero, UTF8);
+            //Toast.makeText(MainActivity.this, String.valueOf(partidosAcertados), Toast.LENGTH_LONG).show();
+            subirPremios(fichero);
         } else {
-            String mensaje = "El fichero \"" + fichero + "\" no se ha creado";
+            String mensaje = "El fichero \"" + nombrefichero + "\" no se ha creado";
             Toast.makeText(MainActivity.this, mensaje, Toast.LENGTH_LONG).show();
         }
 
