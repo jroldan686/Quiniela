@@ -36,41 +36,50 @@
         android:text="Resultados:"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/txvResultados" />
+        android:id="@+id/txvResultados"
+        android:textSize="18sp"
+        android:textStyle="normal|bold" />
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textPersonName"
         android:ems="10"
-        android:id="@+id/edtResultados" />
+        android:id="@+id/edtResultados"
+        android:textColor="@android:color/holo_red_dark" />
 
     <TextView
         android:text="Apuestas:"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/txvApuestas" />
+        android:id="@+id/txvApuestas"
+        android:textSize="18sp"
+        android:textStyle="normal|bold" />
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textPersonName"
         android:ems="10"
-        android:id="@+id/edtApuestas" />
+        android:id="@+id/edtApuestas"
+        android:textColor="@color/colorPrimaryDark" />
 
     <TextView
         android:text="Aciertos y premios:"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/txvAciertosYPremios"
-        android:layout_marginTop="40dp" />
+        android:layout_marginTop="40dp"
+        android:textSize="18sp"
+        android:textStyle="normal|bold" />
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textPersonName"
         android:ems="10"
-        android:id="@+id/edtAciertosYPremios" />
+        android:id="@+id/edtAciertosYPremios"
+        android:textColor="@android:color/holo_green_dark" />
 
     <Button
         android:text="Calcular"

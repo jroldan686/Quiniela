@@ -11,9 +11,27 @@ enum Categoria {
 
 public class Premiada {
 
+    private String temporada;
+    private String jornada;
     private String apuesta;
     private Categoria categoria;
-    private double premio;
+    private float premio;
+
+    public String getTemporada() {
+        return temporada;
+    }
+
+    public void setTemporada(String temporada) {
+        this.temporada = temporada;
+    }
+
+    public String getJornada() {
+        return jornada;
+    }
+
+    public void setJornada(String jornada) {
+        this.jornada = jornada;
+    }
 
     public String getApuesta() {
         return apuesta;
@@ -31,11 +49,11 @@ public class Premiada {
         this.categoria = categoria;
     }
 
-    public double getPremio() {
+    public float getPremio() {
         return premio;
     }
 
-    public void setPremio(double premio) {
+    public void setPremio(float premio) {
         this.premio = premio;
     }
 }
