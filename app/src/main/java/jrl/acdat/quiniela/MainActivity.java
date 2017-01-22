@@ -36,10 +36,10 @@ public class MainActivity extends AppCompatActivity {
     //public static final String RUTAQUINIELISTA = "http://www.quinielista.es/xml/temporada.asp";
 
     // Servidor de clase
-    public static final String RUTASERVIDOR = "http://192.168.2.11/acceso/quiniela/";
+    //public static final String RUTASERVIDOR = "http://192.168.2.11/acceso/quiniela/";
 
     // Servidor de casa
-    //public static final String RUTASERVIDOR = "http://192.168.1.6/curso1617/quiniela/";
+    public static final String RUTASERVIDOR = "http://192.168.1.6/curso1617/quiniela/";
 
     public static final String RESULTADOS = "resultados";
     public static final String APUESTAS = "apuestas.txt";
@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(int statusCode, Header[] headers, String responseString) {
                 progreso.dismiss();
                 try {
-                    if (esJson) {
+                    if(esJson) {
                         JSONObject responseJSON = new JSONObject(responseString);
                         quinielas = Analisis.obtenerResultados(responseJSON);
                     } else {
@@ -373,24 +373,21 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         if(!esJson)
-            contenido = "<quinielas>\n\t<premiadas>\n";
+            contenido = "<premiadas><br/>";
         for(int i = 0; i < premiadas.size(); i++) {
             if(esJson) {
                 Gson gson = new Gson();
                 contenido += gson.toJson(premiadas.get(i)) + "\n";
             } else {
-                contenido += "\t\t<quiniela>\n" +
-                             "\t\t\t<apuesta>" + premiadas.get(i).getApuesta() + "</apuesta>\n" +
-                             "\t\t\t<categoria>" + premiadas.get(i).getCategoria() + "</categoria>\n" +
-                             "\t\t\t<jornada>" + premiadas.get(i).getJornada() + "</jornada>\n" +
-                             "\t\t\t<premio>" + premiadas.get(i).getPremio() + "</premio>\n" +
-                             "\t\t\t<temporada>" + premiadas.get(i).getTemporada() + "</temporada>\n" +
-                             "\t\t</quiniela>\n";
+                contenido += "<apuestas>" +
+                        premiadas.get(i).getApuesta() +
+                        "</apuestas><br/>" +
+                        "<premios>" + premiadas.get(i).getPremio() + " Euros" +
+                        "</premios><br/>";
             }
         }
         if(!esJson)
-            contenido += "\t</premiadas>\n</quinielas>";
-        //String nombrefichero = PREMIOS + (esJson ? EXTENSIONJSON : EXTENSIONXML);
+            contenido += "</premiadas>";
         if(memoria.escribirInterna(ficheroAciertosYPremios, contenido, false, UTF8)) {
             File fichero = new File(this.getFilesDir(), ficheroAciertosYPremios);
             subirPremios(fichero);
