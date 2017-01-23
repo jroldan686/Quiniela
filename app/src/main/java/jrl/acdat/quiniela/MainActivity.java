@@ -373,21 +373,23 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         if(!esJson)
-            contenido = "<premiadas><br/>";
+            contenido = "<quinielas>\n\t<premiadas>\n";
         for(int i = 0; i < premiadas.size(); i++) {
             if(esJson) {
                 Gson gson = new Gson();
                 contenido += gson.toJson(premiadas.get(i)) + "\n";
             } else {
-                contenido += "<apuestas>" +
-                        premiadas.get(i).getApuesta() +
-                        "</apuestas><br/>" +
-                        "<premios>" + premiadas.get(i).getPremio() + " Euros" +
-                        "</premios><br/>";
+                contenido += "\t\t<quiniela>\n" +
+                             "\t\t\t<apuestas>" + premiadas.get(i).getApuesta() + "</apuestas>\n" +
+                             "\t\t\t<categoria>" + premiadas.get(i).getCategoria() + "</categoria>\n" +
+                             "\t\t\t<jornada>" + premiadas.get(i).getJornada() + "</jornada>\n" +
+                             "\t\t\t<premios>" + premiadas.get(i).getPremio() + "</premios>\n" +
+                             "\t\t\t<temporada>" + premiadas.get(i).getTemporada() + "</temporada>\n" +
+                             "\t\t</quiniela>\n";
             }
         }
         if(!esJson)
-            contenido += "</premiadas>";
+            contenido += "\t</premiadas>\n</quinielas>";
         if(memoria.escribirInterna(ficheroAciertosYPremios, contenido, false, UTF8)) {
             File fichero = new File(this.getFilesDir(), ficheroAciertosYPremios);
             subirPremios(fichero);
