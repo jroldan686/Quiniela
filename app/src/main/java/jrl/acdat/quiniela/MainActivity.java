@@ -36,10 +36,10 @@ public class MainActivity extends AppCompatActivity {
     //public static final String RUTAQUINIELISTA = "http://www.quinielista.es/xml/temporada.asp";
 
     // Servidor de clase
-    public static final String RUTASERVIDOR = "http://192.168.2.11/acceso/quiniela/";
+    //public static final String RUTASERVIDOR = "http://192.168.2.11/acceso/quiniela/";
 
     // Servidor de casa
-    //public static final String RUTASERVIDOR = "http://192.168.1.6/curso1617/quiniela/";
+    public static final String RUTASERVIDOR = "http://192.168.1.6/curso1617/quiniela/";
 
     public static final String RESULTADOS = "resultados";
     public static final String APUESTAS = "apuestas.txt";
@@ -72,8 +72,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if(b) {
-                    edtResultados.setText(RUTASERVIDOR + RESULTADOS + "." + EXTENSIONXML);
-                    edtAciertosYPremios.setText(RUTASERVIDOR + PREMIOS + "." + EXTENSIONXML);
+                    edtResultados.setText(obtenerRutaSinExtension(
+                            edtResultados.getText().toString()) + "." + EXTENSIONXML);
+                    edtAciertosYPremios.setText(obtenerRutaSinExtension(
+                            edtAciertosYPremios.getText().toString()) + "." + EXTENSIONXML);
                     esJson = false;
                 }
             }
@@ -83,8 +85,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if(b) {
-                    edtResultados.setText(RUTASERVIDOR + RESULTADOS + "." + EXTENSIONJSON);
-                    edtAciertosYPremios.setText(RUTASERVIDOR + PREMIOS + "." + EXTENSIONJSON);
+                    edtResultados.setText(obtenerRutaSinExtension(
+                            edtResultados.getText().toString()) + "." + EXTENSIONJSON);
+                    edtAciertosYPremios.setText(obtenerRutaSinExtension(
+                            edtAciertosYPremios.getText().toString()) + "." + EXTENSIONJSON);
                     esJson = true;
                 }
             }
@@ -115,9 +119,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        edtResultados.setText(RUTASERVIDOR + RESULTADOS + "." + EXTENSIONJSON);
-        edtApuestas.setText(RUTASERVIDOR + APUESTAS);
-        edtAciertosYPremios.setText(RUTASERVIDOR + PREMIOS + "." + EXTENSIONJSON);
+        rutaResultados = RUTASERVIDOR + RESULTADOS + "." + EXTENSIONJSON;
+        rutaApuestas = RUTASERVIDOR + APUESTAS;
+        rutaAciertosYPremios = RUTASERVIDOR + PREMIOS + "." + EXTENSIONJSON;
+        edtResultados.setText(rutaResultados);
+        edtApuestas.setText(rutaApuestas);
+        edtAciertosYPremios.setText(rutaAciertosYPremios);
         esJson = true;
         memoria = new Memoria(this);
     }
@@ -139,11 +146,11 @@ public class MainActivity extends AppCompatActivity {
     public boolean comprobarRuta(String ruta, EditText editText) {
         boolean esValida = false;
         String mensaje;
+        String control = "";
         if(!ruta.equals("")) {
             if (URLUtil.isValidUrl(ruta)) {
                 esValida = true;
             } else {
-                String control = "";
                 if(editText == edtResultados) control = "de resultados";
                 if(editText == edtApuestas) control = "de apuestas";
                 if(editText == edtAciertosYPremios) control = "de aciertos y premios";
@@ -151,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, mensaje, Toast.LENGTH_LONG).show();
             }
         } else {
-            mensaje = "La ruta \"" + ruta + "\" esta vacia";
+            mensaje = "La ruta \"" + control + "\" esta vacia";
             Toast.makeText(MainActivity.this, mensaje, Toast.LENGTH_LONG).show();
         }
         return esValida;
@@ -163,20 +170,39 @@ public class MainActivity extends AppCompatActivity {
         if(partes.length > 0) {
             ultima = partes.length - 1;
             if (!(partes[ultima].equals(esJson ? EXTENSIONJSON : EXTENSIONXML))) {
-                String rutaAntigua = ruta;
-                ruta = partes[0];
-                partes[ultima] = esJson ? EXTENSIONJSON : EXTENSIONXML;
-                for (int i = 1; i < partes.length; i++)
-                    ruta += "." + partes[i];
-                String[] partesFicheroAntiguo = rutaAntigua.split("/");
-                String antiguofichero = partesFicheroAntiguo[partesFicheroAntiguo.length - 1];
-                String[] partesFicheroNuevo = partes[partes.length - 2].split("/");
-                String nombrefichero = partesFicheroNuevo[partesFicheroNuevo.length - 1];
-                String nuevofichero = (nombrefichero + "." + (esJson ? EXTENSIONJSON : EXTENSIONXML));
-                editText.setText(ruta);
-                String mensaje = "La extension del fichero \"" + antiguofichero + "\" fue modificado por \"" + nuevofichero + "\"";
-                Toast.makeText(MainActivity.this, mensaje, Toast.LENGTH_LONG).show();
+                if(!partes[ultima].contains("/")) {
+                    String rutaAntigua = ruta;
+                    ruta = partes[0];
+                    partes[ultima] = esJson ? EXTENSIONJSON : EXTENSIONXML;
+                    for (int i = 1; i < partes.length; i++)
+                        ruta += "." + partes[i];
+                    String[] partesFicheroAntiguo = rutaAntigua.split("/");
+                    String antiguofichero = partesFicheroAntiguo[partesFicheroAntiguo.length - 1];
+                    String[] partesFicheroNuevo = partes[partes.length - 2].split("/");
+                    String nombrefichero = partesFicheroNuevo[partesFicheroNuevo.length - 1];
+                    String nuevofichero = (nombrefichero + "." + (esJson ? EXTENSIONJSON : EXTENSIONXML));
+                    editText.setText(ruta);
+                    String mensaje = "La extension del fichero \"" + antiguofichero + "\" fue modificado por \"" + nuevofichero + "\"";
+                    Toast.makeText(MainActivity.this, mensaje, Toast.LENGTH_LONG).show();
+                } else {
+                    String[] subpartes = partes[ultima].split("/");
+                    String nombreFichero = subpartes[subpartes.length - 1];
+                    ruta += "." + (esJson ? EXTENSIONJSON : EXTENSIONXML);
+                    editText.setText(ruta);
+                    String mensaje = "La extension del fichero \"" + nombreFichero + "\" no existe. " +
+                                     "Se sustituyo por \"." + (esJson ? EXTENSIONJSON : EXTENSIONXML) + "\"";
+                    Toast.makeText(MainActivity.this, mensaje, Toast.LENGTH_LONG).show();
+                }
             }
+        }
+        return ruta;
+    }
+
+    private String obtenerRutaSinExtension(String ruta) {
+        String[] partes = ruta.split("\\.");
+        ruta = partes[0];
+        for (int i = 1; i < partes.length - 1; i++) {
+            ruta += "." + partes[i];
         }
         return ruta;
     }
@@ -239,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     escrutarApuestas(quinielas, apuestas);
                 } catch (Exception ex) {
-                    Toast.makeText(MainActivity.this, ex.toString(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, ex.getMessage(), Toast.LENGTH_LONG).show();
                 }
             }
 
@@ -326,6 +352,8 @@ public class MainActivity extends AppCompatActivity {
         Premiada premiada;
         int partidosAcertados = 0;
         ArrayList<Premiada> premiadas = new ArrayList<Premiada>();
+        float total = 0;
+        Gson gson = new Gson();
 
         for(int i = 0; i < apuestas.length; i++) {
             apuesta = apuestas[i];
@@ -372,13 +400,13 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-        if(!esJson)
+
+        Escrutinio escrutinio = new Escrutinio();
+        if(!esJson) {
             contenido = "<quinielas>\n\t<premiadas>\n";
+        }
         for(int i = 0; i < premiadas.size(); i++) {
-            if(esJson) {
-                Gson gson = new Gson();
-                contenido += gson.toJson(premiadas.get(i)) + "\n";
-            } else {
+            if(!esJson) {
                 contenido += "\t\t<quiniela>\n" +
                              "\t\t\t<apuestas>" + premiadas.get(i).getApuesta() + "</apuestas>\n" +
                              "\t\t\t<categoria>" + premiadas.get(i).getCategoria() + "</categoria>\n" +
@@ -387,9 +415,15 @@ public class MainActivity extends AppCompatActivity {
                              "\t\t\t<temporada>" + premiadas.get(i).getTemporada() + "</temporada>\n" +
                              "\t\t</quiniela>\n";
             }
+            total += premiadas.get(i).getPremio();
         }
-        if(!esJson)
-            contenido += "\t</premiadas>\n</quinielas>";
+        if(esJson) {
+            escrutinio.setPremiadas(premiadas);
+            escrutinio.setTotal(total);
+            contenido = gson.toJson(escrutinio);
+        } else {
+            contenido += "\t</premiadas>\n\t<total>" + total + "</total>\n</quinielas>";
+        }
         if(memoria.escribirInterna(ficheroAciertosYPremios, contenido, false, UTF8)) {
             File fichero = new File(this.getFilesDir(), ficheroAciertosYPremios);
             subirPremios(fichero);

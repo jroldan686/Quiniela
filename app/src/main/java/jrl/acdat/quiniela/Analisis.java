@@ -142,7 +142,7 @@ public class Analisis {
             JSONArray partidosJSON = quinielasJSON.getJSONObject(i).getJSONArray("partit");
             ArrayList<Partido> partidos = new ArrayList<Partido>();
             for(int j = 0; j < partidosJSON.length(); j++) {
-                // Si el partido no tiene resultado premiado
+                // 1. Si el partido no tiene resultado premiado
                 if(!partidosJSON.getJSONObject(j).getString("sig").equals("")) {
                     partido = new Partido();
                     partido.setNum(partidosJSON.getJSONObject(j).getString("num"));
@@ -151,10 +151,16 @@ public class Analisis {
                     partido.setPt1(partidosJSON.getJSONObject(j).getInt("pt1"));
                     partido.setPtX(partidosJSON.getJSONObject(j).getInt("ptX"));
                     partido.setPt2(partidosJSON.getJSONObject(j).getInt("pt2"));
-                    partido.setSig(partidosJSON.getJSONObject(j).getString("sig"));
+                    // 2. Si no existe la etiqueta "sig"
+                    try {
+                        partido.setSig(partidosJSON.getJSONObject(j).getString("sig"));
+                    } catch (JSONException ex) {
+                        // 2. Se termina el metodo, ya que esto significa que no se han escrutado las quinielas siguientes
+                        return quinielas;
+                    }
                     partidos.add(partido);
                 } else
-                    // Se termina el metodo, ya que esto significa que no se han escrutado las quinielas siguientes
+                    // 1. Se termina el metodo, ya que esto significa que no se han escrutado las quinielas siguientes
                     return quinielas;
             }
             quiniela.setPartit(partidos);
