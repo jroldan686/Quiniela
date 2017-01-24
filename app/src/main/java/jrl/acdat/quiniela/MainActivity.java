@@ -36,10 +36,10 @@ public class MainActivity extends AppCompatActivity {
     //public static final String RUTAQUINIELISTA = "http://www.quinielista.es/xml/temporada.asp";
 
     // Servidor de clase
-    //public static final String RUTASERVIDOR = "http://192.168.2.11/acceso/quiniela/";
+    public static final String RUTASERVIDOR = "http://192.168.2.11/acceso/quiniela/";
 
     // Servidor de casa
-    public static final String RUTASERVIDOR = "http://192.168.1.6/curso1617/quiniela/";
+    //public static final String RUTASERVIDOR = "http://192.168.1.6/curso1617/quiniela/";
 
     public static final String RESULTADOS = "resultados";
     public static final String APUESTAS = "apuestas.txt";
