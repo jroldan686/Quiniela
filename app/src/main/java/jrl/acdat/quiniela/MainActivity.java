@@ -18,6 +18,7 @@ import com.loopj.android.http.FileAsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -35,11 +36,21 @@ public class MainActivity extends AppCompatActivity {
     // Servidor de quinielista.es
     //public static final String RUTAQUINIELISTA = "http://www.quinielista.es/xml/temporada.asp";
 
+    // Servidor de alumno.club
+    public static final String RUTASERVIDORRESULTADOS = "http://alumno.club/acceso/quiniela/";
+    public static final String RUTASERVIDORAPUESTAS = "http://192.168.2.11/acceso/quiniela/";
+    public static final String RUTASERVIDORACIERTOSYPREMIOS = RUTASERVIDORAPUESTAS;
+
     // Servidor de clase
-    public static final String RUTASERVIDOR = "http://192.168.2.11/acceso/quiniela/";
+    //public static final String RUTASERVIDORRESULTADOS = "http://192.168.2.11/acceso/quiniela/";
+    //public static final String RUTASERVIDORAPUESTAS = RUTASERVIDORRESULTADOS;
+    //public static final String RUTASERVIDORACIERTOSYPREMIOS = RUTASERVIDORRESULTADOS;
 
     // Servidor de casa
-    //public static final String RUTASERVIDOR = "http://192.168.1.6/curso1617/quiniela/";
+    //public static final String RUTASERVIDORRESULTADOS = "http://192.168.1.6/curso1617/quiniela/";
+    //public static final String RUTASERVIDORAPUESTAS = RUTASERVIDORRESULTADOS;
+    //public static final String RUTASERVIDORACIERTOSYPREMIOS = RUTASERVIDORRESULTADOS;
+
 
     public static final String RESULTADOS = "resultados";
     public static final String APUESTAS = "apuestas.txt";
@@ -48,10 +59,15 @@ public class MainActivity extends AppCompatActivity {
     public static final String EXTENSIONJSON = "json";
     public static final String FICHEROPHP = "premios.php";
 
+
     public static final String UTF8 = "utf-8";
 
+    String[] basura = {"", "-", "_"};   // Array que contiene los string incluidos en las conversiones de ficheros xml a json
+    int contador = 0;                   // Contador que gestiona el paso de un string a otro en el array anterior
+    boolean esOk;                       // Booleano que verifica si se han probado todos los string del array anterior
+
     RadioButton rdbXml, rdbJson;
-    TextView txvResultados, txvApuestas, txvAciertosYPremios;
+    TextView txvResultados, txvApuestas, txvAciertosYPremios;//, txvResultadosQuiniela, txvPremiosQuiniela;
     EditText edtResultados, edtApuestas, edtAciertosYPremios;
     Button btnCalcular;
 
@@ -119,9 +135,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        rutaResultados = RUTASERVIDOR + RESULTADOS + "." + EXTENSIONJSON;
-        rutaApuestas = RUTASERVIDOR + APUESTAS;
-        rutaAciertosYPremios = RUTASERVIDOR + PREMIOS + "." + EXTENSIONJSON;
+        rutaResultados = RUTASERVIDORRESULTADOS + RESULTADOS + "." + EXTENSIONJSON;
+        rutaApuestas = RUTASERVIDORAPUESTAS + APUESTAS;
+        rutaAciertosYPremios = RUTASERVIDORACIERTOSYPREMIOS + PREMIOS + "." + EXTENSIONJSON;
         edtResultados.setText(rutaResultados);
         edtApuestas.setText(rutaApuestas);
         edtAciertosYPremios.setText(rutaAciertosYPremios);
@@ -255,18 +271,35 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                progreso.dismiss();
-                try {
-                    if(esJson) {
-                        JSONObject responseJSON = new JSONObject(responseString);
-                        quinielas = Analisis.obtenerResultados(responseJSON);
-                    } else {
-                        quinielas = Analisis.obtenerResultados(responseString);
+
+                esOk = false;
+                do {
+                    try {
+                        if(esJson) {
+                            JSONObject responseJSON = new JSONObject(responseString);
+                            quinielas = Analisis.obtenerResultados(responseJSON, basura[contador]);
+                        } else {
+                            quinielas = Analisis.obtenerResultados(responseString);
+                        }
+                        escrutarApuestas(quinielas, apuestas);
+                        contador = 0;
+                        esOk = true;
+                    } catch (Exception ex) {
+                        if(esJson) {
+                            //Toast.makeText(MainActivity.this, "El fichero JSON ha fallado. Reintentando de nuevo...", Toast.LENGTH_LONG).show();
+                            if(contador < basura.length - 1) contador++;
+                            else {
+                                Toast.makeText(MainActivity.this, "El fichero JSON ha fallado. Error: " + ex.getMessage(), Toast.LENGTH_LONG).show();
+                                esOk = true;
+                            }
+                        } else {
+                            Toast.makeText(MainActivity.this, "El fichero XML ha fallado. Error: " + ex.getMessage(), Toast.LENGTH_LONG).show();
+                            contador = 0;
+                            esOk = true;
+                        }
                     }
-                    escrutarApuestas(quinielas, apuestas);
-                } catch (Exception ex) {
-                    Toast.makeText(MainActivity.this, ex.getMessage(), Toast.LENGTH_LONG).show();
-                }
+                } while(!esOk);
+                progreso.dismiss();
             }
 
             @Override
@@ -345,54 +378,74 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void escrutarApuestas(ArrayList<Quiniela> quinielas, String[] apuestas) {
-        int ultimaJornada = quinielas.size() - 1;
-        String temporada = quinielas.get(ultimaJornada).getTemporada();
-        String jornada = quinielas.get(ultimaJornada).getJornada();
+        int ultimaJornada = quinielas.size();
+        String temporada = quinielas.get(ultimaJornada - 1).getTemporada();
+        String jornada = quinielas.get(ultimaJornada - 1).getJornada();
         String apuesta, numero, resultado, plenoAl15, contenido = "";
         Premiada premiada;
-        int partidosAcertados = 0;
+        int partidosAcertados;
         ArrayList<Premiada> premiadas = new ArrayList<Premiada>();
+        int acertadosDe10 = 0;
+        int acertadosDe11 = 0;
+        int acertadosDe12 = 0;
+        int acertadosDe13 = 0;
+        int acertadosDe14 = 0;
+        int acertadosDe15 = 0;
+        int acertados = 0;
         float total = 0;
         Gson gson = new Gson();
 
-        for(int i = 0; i < apuestas.length; i++) {
+        for(int i=0; i < apuestas.length; i++) {
             apuesta = apuestas[i];
             premiada = new Premiada();
             partidosAcertados = 0;
-            for (int j = 0; j < quinielas.get(ultimaJornada).getPartit().size(); j++) {
-                numero = quinielas.get(ultimaJornada).getPartit().get(j).getNum();
-                resultado = quinielas.get(ultimaJornada).getPartit().get(j).getSig();
+            for (int j = 0; j < quinielas.get(ultimaJornada - 1).getPartit().size(); j++) {
+                numero = quinielas.get(ultimaJornada - 1).getPartit().get(j).getNum();
+                resultado = quinielas.get(ultimaJornada - 1).getPartit().get(j).getSig();
                 if (!numero.equals("15") && resultado.equals(String.valueOf(apuesta.charAt(j)))) {
                     partidosAcertados++;
                 }
-                if (numero.equals("15")) {
+                if (partidosAcertados == 14) {
                     plenoAl15 = String.valueOf(apuesta.charAt(j)) + String.valueOf(apuesta.charAt(j + 1));
-                    if(resultado.equals(plenoAl15)) {
+                    if (resultado.equals(plenoAl15)) {
                         partidosAcertados++;
                     }
-                    if(partidosAcertados > 9) {
-                        premiada.setTemporada(temporada);
-                        premiada.setJornada(jornada);
+                }
+                if (numero.equals("15")) {
+                    if (partidosAcertados > 9) {
                         premiada.setApuesta(apuesta);
+                        acertados++;
                         switch (partidosAcertados) {
-                            case 10: premiada.setCategoria(Categoria.QUINTA);
-                                     premiada.setPremio(quinielas.get(ultimaJornada).getEl10() / 100);
-                                     break;
-                            case 11: premiada.setCategoria(Categoria.CUARTA);
-                                     premiada.setPremio(quinielas.get(ultimaJornada).getEl11() / 100);
-                                     break;
-                            case 12: premiada.setCategoria(Categoria.TERCERA);
-                                     premiada.setPremio(quinielas.get(ultimaJornada).getEl12() / 100);
-                                     break;
-                            case 13: premiada.setCategoria(Categoria.SEGUNDA);
-                                     premiada.setPremio(quinielas.get(ultimaJornada).getEl13() / 100);
-                                     break;
-                            case 14: premiada.setCategoria(Categoria.PRIMERA);
-                                     premiada.setPremio(quinielas.get(ultimaJornada).getEl14() / 100);
-                                     break;
-                            case 15: premiada.setCategoria(Categoria.ESPECIAL);
-                                     premiada.setPremio(quinielas.get(ultimaJornada).getEl15() / 100);
-                                     break;
+                            case 10:
+                                premiada.setCategoria(Categoria.quinta);
+                                premiada.setPremio((float) (quinielas.get(ultimaJornada - 1).getEl10()) / 100);
+                                acertadosDe10++;
+                                break;
+                            case 11:
+                                premiada.setCategoria(Categoria.cuarta);
+                                premiada.setPremio((float) (quinielas.get(ultimaJornada - 1).getEl11()) / 100);
+                                acertadosDe11++;
+                                break;
+                            case 12:
+                                premiada.setCategoria(Categoria.tercera);
+                                premiada.setPremio((float) (quinielas.get(ultimaJornada - 1).getEl12()) / 100);
+                                acertadosDe12++;
+                                break;
+                            case 13:
+                                premiada.setCategoria(Categoria.segunda);
+                                premiada.setPremio((float) (quinielas.get(ultimaJornada - 1).getEl13()) / 100);
+                                acertadosDe13++;
+                                break;
+                            case 14:
+                                premiada.setCategoria(Categoria.primera);
+                                premiada.setPremio((float) (quinielas.get(ultimaJornada - 1).getEl14()) / 100);
+                                acertadosDe14++;
+                                break;
+                            case 15:
+                                premiada.setCategoria(Categoria.especial);
+                                premiada.setPremio((float) (quinielas.get(ultimaJornada - 1).getEl15()) / 100);
+                                acertadosDe15++;
+                                break;
                         }
                         premiadas.add(premiada);
                     }
@@ -401,6 +454,20 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        Premio premios = new Premio();
+        premios.setAcertadosDe10(acertadosDe10);
+        premios.setAcertadosDe10(acertadosDe11);
+        premios.setAcertadosDe10(acertadosDe12);
+        premios.setAcertadosDe10(acertadosDe13);
+        premios.setAcertadosDe10(acertadosDe14);
+        premios.setAcertadosDe10(acertadosDe15);
+        premios.setPremiosDe10((float) ((quinielas.get(ultimaJornada - 1).getEl11()) / 100) * premios.getAcertadosDe10());
+        premios.setPremiosDe11((float) ((quinielas.get(ultimaJornada - 1).getEl11()) / 100) * premios.getAcertadosDe11());
+        premios.setPremiosDe12((float) ((quinielas.get(ultimaJornada - 1).getEl11()) / 100) * premios.getAcertadosDe12());
+        premios.setPremiosDe13((float) ((quinielas.get(ultimaJornada - 1).getEl11()) / 100) * premios.getAcertadosDe13());
+        premios.setPremiosDe14((float) ((quinielas.get(ultimaJornada - 1).getEl11()) / 100) * premios.getAcertadosDe14());
+        premios.setPremiosDe15((float) ((quinielas.get(ultimaJornada - 1).getEl11()) / 100) * premios.getAcertadosDe15());
+
         Escrutinio escrutinio = new Escrutinio();
         if(!esJson) {
             contenido = "<quinielas>\n\t<premiadas>\n";
@@ -408,21 +475,42 @@ public class MainActivity extends AppCompatActivity {
         for(int i = 0; i < premiadas.size(); i++) {
             if(!esJson) {
                 contenido += "\t\t<quiniela>\n" +
-                             "\t\t\t<apuestas>" + premiadas.get(i).getApuesta() + "</apuestas>\n" +
-                             "\t\t\t<categoria>" + premiadas.get(i).getCategoria() + "</categoria>\n" +
-                             "\t\t\t<jornada>" + premiadas.get(i).getJornada() + "</jornada>\n" +
-                             "\t\t\t<premios>" + premiadas.get(i).getPremio() + "</premios>\n" +
-                             "\t\t\t<temporada>" + premiadas.get(i).getTemporada() + "</temporada>\n" +
-                             "\t\t</quiniela>\n";
+                        "\t\t\t<apuestas>" + premiadas.get(i).getApuesta() + "</apuestas>\n" +
+                        "\t\t\t<categoria>" + premiadas.get(i).getCategoria() + "</categoria>\n" +
+                        "\t\t\t<premios>" + premiadas.get(i).getPremio() + "</premios>\n" +
+                        "\t\t</quiniela>\n";
             }
             total += premiadas.get(i).getPremio();
         }
+        premios.setAcertados(acertados);
+        premios.setTotal(total);
         if(esJson) {
             escrutinio.setPremiadas(premiadas);
-            escrutinio.setTotal(total);
+            escrutinio.setTemporada(temporada);
+            escrutinio.setJornada(jornada);
+            escrutinio.setPremios(premios);
             contenido = gson.toJson(escrutinio);
         } else {
-            contenido += "\t</premiadas>\n\t<total>" + total + "</total>\n</quinielas>";
+            contenido += "\t</premiadas>\n" +
+                    "\t<temporada>" + temporada + "</temporada>\n" +
+                    "\t<jornada>" + jornada + "</jornada>\n" +
+                    "\t<premios>\n" +
+                    "\t\t<acertadosDe10>" + premios.getAcertadosDe10() + "</acertadosDe10>\n" +
+                    "\t\t<premiosDe10>" + premios.getPremiosDe10() + "</acertadosDe10>\n" +
+                    "\t\t<acertadosDe11>" + premios.getAcertadosDe11() + "</acertadosDe11>\n" +
+                    "\t\t<premiosDe11>" + premios.getPremiosDe11() + "</acertadosDe11>\n" +
+                    "\t\t<acertadosDe12>" + premios.getAcertadosDe12() + "</acertadosDe12>\n" +
+                    "\t\t<premiosDe12>" + premios.getPremiosDe12() + "</acertadosDe12>\n" +
+                    "\t\t<acertadosDe13>" + premios.getAcertadosDe13() + "</acertadosDe13>\n" +
+                    "\t\t<premiosDe13>" + premios.getPremiosDe13() + "</acertadosDe13>\n" +
+                    "\t\t<acertadosDe14>" + premios.getAcertadosDe14() + "</acertadosDe14>\n" +
+                    "\t\t<premiosDe14>" + premios.getPremiosDe14() + "</acertadosDe14>\n" +
+                    "\t\t<acertadosDe15>" + premios.getAcertadosDe15() + "</acertadosDe15>\n" +
+                    "\t\t<premiosDe15>" + premios.getPremiosDe15() + "</acertadosDe15>\n" +
+                    "\t\t<acertados>" + premios.getAcertados() + "</acertados>\n" +
+                    "\t\t<total>" + premios.getTotal() + "</total>\n" +
+                    "\t</premios>\n" +
+                    "</quinielas>";
         }
         if(memoria.escribirInterna(ficheroAciertosYPremios, contenido, false, UTF8)) {
             File fichero = new File(this.getFilesDir(), ficheroAciertosYPremios);

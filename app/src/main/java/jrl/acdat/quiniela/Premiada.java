@@ -1,37 +1,20 @@
 package jrl.acdat.quiniela;
 
+// Información sobre las categorías en: https://www.ventura24.es/quiniela
 enum Categoria {
-    ESPECIAL,       // 14 aciertos + el pleno al 15
-    PRIMERA,        // 14 aciertos
-    SEGUNDA,        // 13 aciertos
-    TERCERA,        // 12 aciertos
-    CUARTA,         // 11 aciertos
-    QUINTA          // 10 aciertos
+    especial,       // 14 aciertos + el pleno al 15
+    primera,        // 14 aciertos
+    segunda,        // 13 aciertos
+    tercera,        // 12 aciertos
+    cuarta,         // 11 aciertos
+    quinta          // 10 aciertos
 }
 
 public class Premiada {
 
-    private String temporada;
-    private String jornada;
     private String apuesta;
     private Categoria categoria;
     private float premio;
-
-    public String getTemporada() {
-        return temporada;
-    }
-
-    public void setTemporada(String temporada) {
-        this.temporada = temporada;
-    }
-
-    public String getJornada() {
-        return jornada;
-    }
-
-    public void setJornada(String jornada) {
-        this.jornada = jornada;
-    }
 
     public String getApuesta() {
         return apuesta;
