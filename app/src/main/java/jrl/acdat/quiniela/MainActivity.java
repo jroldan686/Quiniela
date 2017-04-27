@@ -456,11 +456,11 @@ public class MainActivity extends AppCompatActivity {
 
         Premio premios = new Premio();
         premios.setAcertadosDe10(acertadosDe10);
-        premios.setAcertadosDe10(acertadosDe11);
-        premios.setAcertadosDe10(acertadosDe12);
-        premios.setAcertadosDe10(acertadosDe13);
-        premios.setAcertadosDe10(acertadosDe14);
-        premios.setAcertadosDe10(acertadosDe15);
+        premios.setAcertadosDe11(acertadosDe11);
+        premios.setAcertadosDe12(acertadosDe12);
+        premios.setAcertadosDe13(acertadosDe13);
+        premios.setAcertadosDe14(acertadosDe14);
+        premios.setAcertadosDe15(acertadosDe15);
         premios.setPremiosDe10((float) ((quinielas.get(ultimaJornada - 1).getEl10()) / 100) * premios.getAcertadosDe10());
         premios.setPremiosDe11((float) ((quinielas.get(ultimaJornada - 1).getEl11()) / 100) * premios.getAcertadosDe11());
         premios.setPremiosDe12((float) ((quinielas.get(ultimaJornada - 1).getEl12()) / 100) * premios.getAcertadosDe12());
