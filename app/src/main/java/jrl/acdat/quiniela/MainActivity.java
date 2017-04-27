@@ -496,17 +496,17 @@ public class MainActivity extends AppCompatActivity {
                     "\t<jornada>" + jornada + "</jornada>\n" +
                     "\t<premios>\n" +
                     "\t\t<acertadosDe10>" + premios.getAcertadosDe10() + "</acertadosDe10>\n" +
-                    "\t\t<premiosDe10>" + premios.getPremiosDe10() + "</acertadosDe10>\n" +
+                    "\t\t<premiosDe10>" + premios.getPremiosDe10() + "</premiosDe10>\n" +
                     "\t\t<acertadosDe11>" + premios.getAcertadosDe11() + "</acertadosDe11>\n" +
-                    "\t\t<premiosDe11>" + premios.getPremiosDe11() + "</acertadosDe11>\n" +
+                    "\t\t<premiosDe11>" + premios.getPremiosDe11() + "</premiosDe11>\n" +
                     "\t\t<acertadosDe12>" + premios.getAcertadosDe12() + "</acertadosDe12>\n" +
-                    "\t\t<premiosDe12>" + premios.getPremiosDe12() + "</acertadosDe12>\n" +
+                    "\t\t<premiosDe12>" + premios.getPremiosDe12() + "</premiosDe12>\n" +
                     "\t\t<acertadosDe13>" + premios.getAcertadosDe13() + "</acertadosDe13>\n" +
-                    "\t\t<premiosDe13>" + premios.getPremiosDe13() + "</acertadosDe13>\n" +
+                    "\t\t<premiosDe13>" + premios.getPremiosDe13() + "</premiosDe13>\n" +
                     "\t\t<acertadosDe14>" + premios.getAcertadosDe14() + "</acertadosDe14>\n" +
-                    "\t\t<premiosDe14>" + premios.getPremiosDe14() + "</acertadosDe14>\n" +
+                    "\t\t<premiosDe14>" + premios.getPremiosDe14() + "</premiosDe14>\n" +
                     "\t\t<acertadosDe15>" + premios.getAcertadosDe15() + "</acertadosDe15>\n" +
-                    "\t\t<premiosDe15>" + premios.getPremiosDe15() + "</acertadosDe15>\n" +
+                    "\t\t<premiosDe15>" + premios.getPremiosDe15() + "</premiosDe15>\n" +
                     "\t\t<acertados>" + premios.getAcertados() + "</acertados>\n" +
                     "\t\t<total>" + premios.getTotal() + "</total>\n" +
                     "\t</premios>\n" +
