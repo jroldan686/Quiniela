@@ -461,12 +461,12 @@ public class MainActivity extends AppCompatActivity {
         premios.setAcertadosDe10(acertadosDe13);
         premios.setAcertadosDe10(acertadosDe14);
         premios.setAcertadosDe10(acertadosDe15);
-        premios.setPremiosDe10((float) ((quinielas.get(ultimaJornada - 1).getEl11()) / 100) * premios.getAcertadosDe10());
+        premios.setPremiosDe10((float) ((quinielas.get(ultimaJornada - 1).getEl10()) / 100) * premios.getAcertadosDe10());
         premios.setPremiosDe11((float) ((quinielas.get(ultimaJornada - 1).getEl11()) / 100) * premios.getAcertadosDe11());
-        premios.setPremiosDe12((float) ((quinielas.get(ultimaJornada - 1).getEl11()) / 100) * premios.getAcertadosDe12());
-        premios.setPremiosDe13((float) ((quinielas.get(ultimaJornada - 1).getEl11()) / 100) * premios.getAcertadosDe13());
-        premios.setPremiosDe14((float) ((quinielas.get(ultimaJornada - 1).getEl11()) / 100) * premios.getAcertadosDe14());
-        premios.setPremiosDe15((float) ((quinielas.get(ultimaJornada - 1).getEl11()) / 100) * premios.getAcertadosDe15());
+        premios.setPremiosDe12((float) ((quinielas.get(ultimaJornada - 1).getEl12()) / 100) * premios.getAcertadosDe12());
+        premios.setPremiosDe13((float) ((quinielas.get(ultimaJornada - 1).getEl13()) / 100) * premios.getAcertadosDe13());
+        premios.setPremiosDe14((float) ((quinielas.get(ultimaJornada - 1).getEl14()) / 100) * premios.getAcertadosDe14());
+        premios.setPremiosDe15((float) ((quinielas.get(ultimaJornada - 1).getEl15()) / 100) * premios.getAcertadosDe15());
 
         Escrutinio escrutinio = new Escrutinio();
         if(!esJson) {
